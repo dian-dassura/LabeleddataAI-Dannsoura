@@ -1,14 +1,10 @@
 import { useState } from "react";
 
-// In-memory store (reset on redeploy)
-let tasks = [];
-
 export default function Home() {
   const [role, setRole] = useState("client"); // toggle role: client/partner
   const [taskName, setTaskName] = useState("");
-  const [tasksList, setTasksList] = useState(tasks);
+  const [tasksList, setTasksList] = useState([]);
 
-  // Submit a new task (client only)
   async function createTask(e) {
     e.preventDefault();
     if (!taskName) return alert("Enter task name");
@@ -25,7 +21,6 @@ export default function Home() {
     }
   }
 
-  // Partner accepts a task
   async function acceptTask(index) {
     const res = await fetch("/api/tasks", {
       method: "PUT",
@@ -38,7 +33,6 @@ export default function Home() {
     }
   }
 
-  // Filter tasks by status for display
   const openTasks = tasksList.filter((t) => t.status === "open");
   const acceptedTasks = tasksList.filter((t) => t.status === "accepted");
 
@@ -46,7 +40,6 @@ export default function Home() {
     <div style={{ maxWidth: 600, margin: "2rem auto", fontFamily: "Arial" }}>
       <h1>Data Labeling MVP Prototype</h1>
 
-      {/* Role toggle */}
       <div style={{ marginBottom: "1rem" }}>
         <label>
           <input
@@ -121,27 +114,3 @@ export default function Home() {
     </div>
   );
 }
-
-// API handler for tasks
-export async function api(req, res) {
-  if (req.method === "POST") {
-    const { name } = req.body;
-    if (!name) return res.status(400).json({ error: "Missing task name" });
-
-    const newTask = { name, status: "open" };
-    tasks.push(newTask);
-    return res.status(201).json(newTask);
-  } else if (req.method === "PUT") {
-    const { index } = req.body;
-    if (index === undefined || !tasks[index]) {
-      return res.status(400).json({ error: "Invalid task index" });
-    }
-
-    tasks[index].status = "accepted";
-    return res.status(200).json(tasks);
-  } else {
-    res.status(405).json({ error: "Method not allowed" });
-  }
-}
-Add Next.js entry point
-
